@@ -1,7 +1,25 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+
 import Head from './head'
+import Viewer from './viewer'
 
 const Home = () => {
+  const [data, setData] = useState()
+
+  const getData = () => {
+    axios('/api/v1/').then((obj) => setData(obj.data))
+  }
+
+  const onClick = () => {
+    getData()
+  }
+
+  useEffect(() => {
+    getData()
+    return () => {}
+  }, [])
+
   return (
     <div>
       <Head title="Home" />
@@ -13,11 +31,11 @@ const Home = () => {
         <div className="my-2">
           <span className="text-primary">https://freezing-api.io/api/v1/</span>
           <input className="mx-2 text-blue-900 rounded" type="text" />
-          <button className="text-primary" type="button">
+          <button className="text-primary" type="button" onClick={onClick}>
             Send
           </button>
         </div>
-        <div id="result" />
+        <Viewer data={data} />
       </div>
     </div>
   )

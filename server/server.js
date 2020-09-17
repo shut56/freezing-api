@@ -30,14 +30,20 @@ const middleware = [
 middleware.forEach((it) => server.use(it))
 
 server.get('/api/v1', async (req, res) => {
-  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
+  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
+    JSON.parse(result)
+  )
   res.json(data)
 })
 
 server.post('/api/v1', async (req, res) => {
-  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
+  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
+    JSON.parse(result)
+  )
   const fields = req.body
-  writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...fields }), { encoding: 'utf8' })
+  writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...fields }), {
+    encoding: 'utf8'
+  })
   res.send('Data is uploaded')
 })
 
