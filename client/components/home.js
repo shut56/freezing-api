@@ -1,18 +1,24 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Head from './head'
-// import wave from '../assets/images/wave.jpg'
 
 const Home = () => {
-  const [counter, setCounterNew] = useState(0)
-
   return (
     <div>
-      <Head title="Hello" />
-      <img alt="wave" src="images/wave.jpg" />
-      <button type="button" onClick={() => setCounterNew(counter + 1)}>
-        updateCounter
-      </button>
-      <div> Hello World Dashboard {counter} </div>
+      <Head title="Home" />
+      <div className="flex flex-col h-screen justify-start items-center bg-primary">
+        <div className="my-2">
+          <img src="images/FreezingLogo.png" alt="Freezing Logo" />
+        </div>
+        <div className="my-2 text-primary"> The RESTful Freezing API </div>
+        <div className="my-2">
+          <span className="text-primary">https://freezing-api.io/api/v1/</span>
+          <input className="mx-2 text-blue-900 rounded" type="text" />
+          <button className="text-primary" type="button">
+            Send
+          </button>
+        </div>
+        <div id="result" />
+      </div>
     </div>
   )
 }

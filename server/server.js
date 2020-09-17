@@ -10,21 +10,9 @@ import cookieParser from 'cookie-parser'
 import config from './config'
 import Html from '../client/html'
 
+const { readFile, writeFile } = require('fs').promises
+
 const Root = () => ''
-
-try {
-  // eslint-disable-next-line import/no-unresolved
-  // ;(async () => {
-  //   const items = await import('../dist/assets/js/root.bundle')
-  //   console.log(JSON.stringify(items))
-
-  //   Root = (props) => <items.Root {...props} />
-  //   console.log(JSON.stringify(items.Root))
-  // })()
-  console.log(Root)
-} catch (ex) {
-  console.log(' run yarn build:prod to enable ssr')
-}
 
 let connections = []
 
@@ -40,6 +28,18 @@ const middleware = [
 ]
 
 middleware.forEach((it) => server.use(it))
+
+server.get('/api/v1', async (req, res) => {
+  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
+  res.json(data)
+})
+
+server.post('/api/v1', async (req, res) => {
+  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
+  const fields = req.body
+  writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...fields }), { encoding: 'utf8' })
+  res.send('Data is uploaded')
+})
 
 server.use('/api/', (req, res) => {
   res.status(404)
