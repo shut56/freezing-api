@@ -19,6 +19,38 @@ let connections = []
 const port = process.env.PORT || 8090
 const server = express()
 
+const fillMainObject = (req) => {
+  const base = {
+    manga: [
+      'Freezing',
+      'Freezing: First Chronicles',
+      'Freezing: Zero',
+      'Freezing: Giant Issue',
+      'Sexy Dynamite Bomber',
+      'Eroizing',
+    ],
+    anime: [
+      'Freezing',
+      'Freezing: Vibration',
+    ]
+  }
+  const main = ['manga', 'character', 'pandora', 'limiter', 'valkyrie', 'e-pandora', 'nova', 'anime', 'stuff']
+  return async () => {
+    const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
+    const result = main.reduce((acc, rec) => {
+      if (Array.isArray(base[rec])) {
+        return {...acc, [rec]: base[rec].map((title, index) => `${req.hostname}/api/v1/${rec}/${index + 1}`)}
+      }
+      return {...acc, [rec]: ''}
+    }, {})
+    // const result = {...data, [stage1]: base[stage1].map((title, index) => `${req.hostname}/api/v1/${stage1}/${index + 1}`)}
+    writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...result }), {
+      encoding: 'utf8'
+    })
+    return result
+  }
+}
+
 const middleware = [
   cors(),
   express.static(path.resolve(__dirname, '../dist/assets')),
@@ -30,20 +62,27 @@ const middleware = [
 middleware.forEach((it) => server.use(it))
 
 server.get('/api/v1', async (req, res) => {
-  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
-    JSON.parse(result)
-  )
+  const data = await fillMainObject(req)()
+  console.log('Loading complete')
+  // const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
+  //   JSON.parse(result)
+  // )
   res.json(data)
 })
 
+server.get('/api/v1/:stage1', async (req, res) => {
+  const { stage1 } = req.params
+  res.json(stage1)
+})
+
 server.post('/api/v1', async (req, res) => {
-  const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
-    JSON.parse(result)
-  )
-  const fields = req.body
-  writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...fields }), {
-    encoding: 'utf8'
-  })
+  // const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
+  //   JSON.parse(result)
+  // )
+  // const fields = req.body
+  // writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...fields }), {
+  //   encoding: 'utf8'
+  // })
   res.send('Data is uploaded')
 })
 
