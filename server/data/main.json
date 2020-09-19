@@ -1,1 +1,12 @@
-{"manga":["localhost/api/v1/manga/1","localhost/api/v1/manga/2","localhost/api/v1/manga/3","localhost/api/v1/manga/4","localhost/api/v1/manga/5","localhost/api/v1/manga/6"],"anime":["localhost/api/v1/anime/1","localhost/api/v1/anime/2"],"character":"","pandora":"","limiter":"","valkyrie":"","e-pandora":"","nova":"","stuff":""}
+[
+  "manga",
+  "character",
+  "pandora",
+  "limiter",
+  "valkyrie",
+  "e-pandora",
+  "nova",
+  "anime",
+  "stuff",
+  "location"
+]

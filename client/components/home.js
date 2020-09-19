@@ -29,7 +29,7 @@ const Home = () => {
         </div>
         <div className="my-2 text-primary"> The RESTful Freezing API </div>
         <div className="my-2">
-          <span className="text-primary">https://freezing-api.io/api/v1/</span>
+          <span className="text-primary">{`${window.location.origin}/api/v1/`}</span>
           <input className="mx-2 text-blue-900 rounded" type="text" />
           <button className="text-primary" type="button" onClick={onClick}>
             Send

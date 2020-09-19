@@ -10,7 +10,27 @@ import cookieParser from 'cookie-parser'
 import config from './config'
 import Html from '../client/html'
 
+const puppeteer = require('puppeteer')
 const { readFile, writeFile } = require('fs').promises
+
+/* MongoDB for future experiments
+const { MongoClient } = require('mongodb')
+
+const mongoUrl = 'mongodb://127.0.0.1:27017'
+const mongoClient = new MongoClient(mongoUrl, { useUnifiedTopology: true })
+
+const connectToMongo = (client) => {
+  client.connect(async (err) => {
+    if (err) {
+      console.log(err)
+    }
+    const db = client.db('freezingdb')
+    const collection = db.collection('main')
+    const array = await collection.find({}).toArray()
+    client.close()
+  })
+}
+*/
 
 const Root = () => ''
 
@@ -19,35 +39,77 @@ let connections = []
 const port = process.env.PORT || 8090
 const server = express()
 
-const fillMainObject = (req) => {
-  const base = {
-    manga: [
-      'Freezing',
-      'Freezing: First Chronicles',
-      'Freezing: Zero',
-      'Freezing: Giant Issue',
-      'Sexy Dynamite Bomber',
-      'Eroizing',
-    ],
-    anime: [
-      'Freezing',
-      'Freezing: Vibration',
-    ]
+const webScraping = (arg) => {
+  const section = `${arg.slice(0,1).toUpperCase()}${arg.slice(1).toLowerCase()}`
+  // const section = 'E-Pandora'
+  const url = `https://freezing.fandom.com/wiki/Category:${section}`
+  console.log(url)
+  try {  
+    (async () => {  
+      const browser = await puppeteer.launch({  
+        executablePath: '/usr/bin/chromium-browser',  
+        args: [  
+             '--disable-gpu',  
+             '--disable-dev-shm-usage',  
+             '--disable-setuid-sandbox',  
+             '--no-first-run',  
+             '--no-sandbox',  
+             '--no-zygote',  
+             '--single-process',  
+        ]  
+      })  
+      const page = await browser.newPage()  
+      await page.setUserAgent('Chrome/75.0.3770.100')  
+      await page.goto(url)  
+
+      const list = await page.$$eval('.category-page__member-link', (anchors) => {  
+        return anchors.map((rec) => rec.textContent)  
+      })  
+
+      console.log(list)  
+      writeFile(`${__dirname}/data/${arg}.json`, JSON.stringify(list), { encoding: 'utf8' })
+      await browser.close()  
+    })()  
+  } catch (err) {  
+    console.error(err)  
   }
-  const main = ['manga', 'character', 'pandora', 'limiter', 'valkyrie', 'e-pandora', 'nova', 'anime', 'stuff']
-  return async () => {
-    const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) => JSON.parse(result))
-    const result = main.reduce((acc, rec) => {
-      if (Array.isArray(base[rec])) {
-        return {...acc, [rec]: base[rec].map((title, index) => `${req.hostname}/api/v1/${rec}/${index + 1}`)}
-      }
-      return {...acc, [rec]: ''}
-    }, {})
-    // const result = {...data, [stage1]: base[stage1].map((title, index) => `${req.hostname}/api/v1/${stage1}/${index + 1}`)}
-    writeFile(`${__dirname}/data/main.json`, JSON.stringify({ ...data, ...result }), {
-      encoding: 'utf8'
+}
+
+const getData = async (section, req) => {
+  const data = await readFile(`${__dirname}/data/${section}.json`, { encoding: 'utf8' })
+    .then((result) => JSON.parse(result))
+    .catch(async () => {
+      writeFile(`${__dirname}/data/${section}.json`, JSON.stringify([]), { encoding: 'utf8' })
+      return []
     })
-    return result
+  if (data.length === 0) {
+    webScraping(section)
+  }
+  const sectionList = data.reduce((acc, rec, index) => {
+    return [...acc, { name: rec, url: `https://${req.hostname}/api/v1/${section}/${index + 1}`}]
+  }, [])
+  const result = { 
+    count: sectionList.length,
+    results: sectionList.length ? sectionList : 'in progress'
+  }
+  return result
+}
+
+const fillData = (req) => {
+  const main = ['manga', 'character', 'pandora', 'limiter', 'valkyrie', 'e-pandora', 'nova', 'anime', 'stuff', 'location']
+  return {
+    mainListGeneration() {
+      const result = main.reduce((acc, rec) => {
+        return {...acc, [rec]: `https://${req.hostname}/api/v1/${rec}`}
+      }, {})
+      return result
+    },
+    filler(stage) {
+      if (typeof stage !== 'string' || !main.includes(stage)) {
+        return { 'section': 'not found' }
+      }
+      return getData(stage, req)
+    }
   }
 }
 
@@ -62,18 +124,18 @@ const middleware = [
 middleware.forEach((it) => server.use(it))
 
 server.get('/api/v1', async (req, res) => {
-  const data = await fillMainObject(req)()
-  console.log('Loading complete')
-  // const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>
-  //   JSON.parse(result)
-  // )
+  const data = await fillData(req).mainListGeneration()
+  // connectToMongo(mongoClient)
   res.json(data)
 })
 
-server.get('/api/v1/:stage1', async (req, res) => {
-  const { stage1 } = req.params
-  res.json(stage1)
+server.get('/api/v1/:section', async (req, res) => {
+  const { section } = req.params
+  const data = await fillData(req).filler(section)
+  res.json(data)
 })
+
+// const list = Array.from(document.querySelectorAll('.category-page__member-link')).map((ch) => `${ch.textContent}`)
 
 server.post('/api/v1', async (req, res) => {
   // const data = await readFile(`${__dirname}/data/main.json`, { encoding: 'utf8' }).then((result) =>

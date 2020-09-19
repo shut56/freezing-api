@@ -10,8 +10,9 @@ const Viewer = (props) => {
           src={props.data}
           name={false}
           indentWidth={2}
-          enableClipboard={false}
           displayDataTypes={false}
+          enableClipboard
+          sortKeys
         />
       </div>
     </div>

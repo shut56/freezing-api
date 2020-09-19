@@ -88,7 +88,9 @@
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "history": "^4.10.1",
+        "mongodb": "^3.6.2",
         "prop-types": "^15.7.2",
+        "puppeteer": "^5.3.0",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "react-helmet": "^6.1.0",
@@ -176,6 +178,7 @@
         "postcss-import": "^12.0.1",
         "postcss-preset-env": "^6.7.0",
         "prettier": "^2.1.1",
+        "puppeteer-core": "^5.3.0",
         "raw-loader": "^4.0.1",
         "react-addons-test-utils": "^15.6.2",
         "regenerator-runtime": "^0.13.7",
@@ -193,7 +196,8 @@
     },
     "nodemonConfig": {
         "ignore": [
-            "*.hot-update.json"
+            "*.hot-update.json",
+            "server/data/*.json"
         ]
     },
     "husky": {
