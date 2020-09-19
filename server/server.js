@@ -40,38 +40,38 @@ const port = process.env.PORT || 8090
 const server = express()
 
 const webScraping = (arg) => {
-  const section = `${arg.slice(0,1).toUpperCase()}${arg.slice(1).toLowerCase()}`
+  const section = `${arg.slice(0, 1).toUpperCase()}${arg.slice(1).toLowerCase()}`
   // const section = 'E-Pandora'
   const url = `https://freezing.fandom.com/wiki/Category:${section}`
   console.log(url)
-  try {  
-    (async () => {  
-      const browser = await puppeteer.launch({  
-        executablePath: '/usr/bin/chromium-browser',  
-        args: [  
-             '--disable-gpu',  
-             '--disable-dev-shm-usage',  
-             '--disable-setuid-sandbox',  
-             '--no-first-run',  
-             '--no-sandbox',  
-             '--no-zygote',  
-             '--single-process',  
-        ]  
-      })  
-      const page = await browser.newPage()  
-      await page.setUserAgent('Chrome/75.0.3770.100')  
-      await page.goto(url)  
+  try {
+    ;(async () => {
+      const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser',
+        args: [
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-setuid-sandbox',
+          '--no-first-run',
+          '--no-sandbox',
+          '--no-zygote',
+          '--single-process'
+        ]
+      })
+      const page = await browser.newPage()
+      await page.setUserAgent('Chrome/75.0.3770.100')
+      await page.goto(url)
 
-      const list = await page.$$eval('.category-page__member-link', (anchors) => {  
-        return anchors.map((rec) => rec.textContent)  
-      })  
+      const list = await page.$$eval('.category-page__member-link', (anchors) => {
+        return anchors.map((rec) => rec.textContent)
+      })
 
-      console.log(list)  
+      console.log(list)
       writeFile(`${__dirname}/data/${arg}.json`, JSON.stringify(list), { encoding: 'utf8' })
-      await browser.close()  
-    })()  
-  } catch (err) {  
-    console.error(err)  
+      await browser.close()
+    })()
+  } catch (err) {
+    console.error(err)
   }
 }
 
@@ -86,9 +86,9 @@ const getData = async (section, req) => {
     webScraping(section)
   }
   const sectionList = data.reduce((acc, rec, index) => {
-    return [...acc, { name: rec, url: `https://${req.hostname}/api/v1/${section}/${index + 1}`}]
+    return [...acc, { name: rec, url: `https://${req.hostname}/api/v1/${section}/${index + 1}` }]
   }, [])
-  const result = { 
+  const result = {
     count: sectionList.length,
     results: sectionList.length ? sectionList : 'in progress'
   }
@@ -96,17 +96,28 @@ const getData = async (section, req) => {
 }
 
 const fillData = (req) => {
-  const main = ['manga', 'character', 'pandora', 'limiter', 'valkyrie', 'e-pandora', 'nova', 'anime', 'stuff', 'location']
+  const main = [
+    'manga',
+    'character',
+    'pandora',
+    'limiter',
+    'valkyrie',
+    'e-pandora',
+    'nova',
+    'anime',
+    'stuff',
+    'location'
+  ]
   return {
     mainListGeneration() {
       const result = main.reduce((acc, rec) => {
-        return {...acc, [rec]: `https://${req.hostname}/api/v1/${rec}`}
+        return { ...acc, [rec]: `https://${req.hostname}/api/v1/${rec}` }
       }, {})
       return result
     },
     filler(stage) {
       if (typeof stage !== 'string' || !main.includes(stage)) {
-        return { 'section': 'not found' }
+        return { section: 'not found' }
       }
       return getData(stage, req)
     }
